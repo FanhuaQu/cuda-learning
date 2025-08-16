@@ -150,3 +150,34 @@ canAccessPeer=1
 
 ```
 
+在实际使用的时候，通常是在启动kernel之前通过`cudaIpcGetMemHandle`以及`cudaIpcOpenMemHandle`以及通过all-gather操作来获得每张卡开辟显存的指针。这样在每张卡就能通过这个指针访问其他rank的数据，就和访问本地显存一样。
+
+
+
+# ipc和NCCL以及NVSHMEM是什么关系？
+
+首先**cuda ipc**是指cuda 进程间通信，作用是同一台机器上的多个进程共享GPU内存，只能在同机器上进行，底层是依赖于**UVA(统一虚拟寻址)**和GPU peer access。提供**基础的跨进程 GPU 内存共享能力**，相当于最原始的“拼积木”接口
+
+**NCCL**全称是NVIDIA Collective Communication Library。作用是实现多 GPU/多节点的高效通信（AllReduce、Broadcast、Gather 等）。不仅能在同机多 GPU 间通信，还能跨节点（多机）通信。底层会根据拓扑（NVLink、PCIe、InfiniBand 等）选择最快的传输路径。
+
+* 在 **单机多 GPU** 情况下，NCCL 可以用 **CUDA IPC + P2P 访问 (NVLink/PCIe)** 来实现 GPU↔GPU 数据交换
+* 在 **多机** 情况下，NCCL 会用 **InfiniBand/RDMA** 等网络传输
+* **定位**：构建在 CUDA IPC 等机制之上的**分布式通信框架**，主要面向深度学习。
+
+**NVSHMEM**是更通用的 **PGAS (Partitioned Global Address Space) 编程模型**
+
+功能：
+
+* 提供类似 **OpenSHMEM** 的接口，把多 GPU/多进程的显存抽象成一块“对称共享内存”。
+* 支持 GPU 内核直接发起 **one-sided 通信**（put/get/atomic），而不是必须依赖 CPU 协调
+* 支持 **单机多 GPU**，也支持 **跨机多 GPU**（走 IB/RDMA）
+
+底层实现
+
+* 单机时：可能使用 **CUDA IPC + CUDA P2P** 来访问远程 GPU 内存。
+* 跨机时：走 **GPUDirect RDMA**。
+
+
+
+
+
