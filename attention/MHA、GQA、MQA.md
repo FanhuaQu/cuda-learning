@@ -6,7 +6,7 @@
 $$
 Attention(Q,K,V) = softmax(\frac{QK^T}{\sqrt{d_k}})V
 $$
-<img src="D:\日拱一卒日新月异\cuda编程\gitnote\cuda-learning\attention\assets\image-20251024233044396.png" alt="image-20251024233044396" style="zoom:50%;" />
+<img src="assets\image-20251024233044396.png" alt="image-20251024233044396" style="zoom:50%;" />
 
 这里的Q、K、V是由一个统一的输入矩阵X经过投影得到的
 $$
@@ -290,7 +290,7 @@ $$
 
 GQA是MHA和MQA的折中，虽然MQA方式大幅减小了参数数量，但是，带来推理加速的同时会造成模型性能损失，且在训练过程使得模型变得不稳定（**复杂度的降低可能会导致质量下降和训练不稳定**），因此在此基础上提出了GQA，它将Query进行分组，每个组内共享一组Key、Value。
 
-![image-20251025205249713](D:\日拱一卒日新月异\cuda编程\gitnote\cuda-learning\attention\assets\image-20251025205249713.png)
+![image-20251025205249713](assets\image-20251025205249713.png)
 
 当G数量为1时，就变成了MQA，所有的Q头只有一个KV头
 
